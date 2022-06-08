@@ -10,7 +10,7 @@ function runProgram(){
   // Constant Variables
   var FRAME_RATE = 60;
   var FRAMES_PER_SECOND_INTERVAL = 1000 / FRAME_RATE;
-  var FRICTION = 0.9;
+  var FRICTION = 1;
 
   var KEY = {
     ENTER: 13,
@@ -297,11 +297,20 @@ function runProgram(){
   function resetGameItems() {
     walker1.posX = 0;
     walker1.posY = 0;
+    walker1.velX = 0;
+    walker1.velY = 0;
 
     walker2.posX = board.width - walker2.width;
     walker2.posY = board.height - walker2.height;
+    walker2.velX = 0;
+    walker2.velY = 0;
 
-    walker1.velX, walker1.velY, walker2.velX, walker2.velY = 0;
+    for(let prop in walker1.movement) {
+      walker1.movement[prop] = false;
+    }
+    for(let prop in walker2.movement) {
+      walker2.movement[prop] = false;
+    }
   }
 
   function endGame() {
