@@ -75,9 +75,8 @@ function runProgram(){
       d: false
     }
   };
-  //set walker2 placement
-  walker2.posX = board.width - walker2.width;
-  walker2.posY = board.height - walker2.height;
+  //set item placements
+  resetGameItems();
 
   // one-time setup
   var interval = setInterval(newFrame, FRAMES_PER_SECOND_INTERVAL);   // execute newFrame every 0.0166 seconds (60 Frames per second)
@@ -208,9 +207,12 @@ function runProgram(){
     } else {
       other = walker1;
     }
-    checkItemItemCollision(walker, other, function(side, walker) {
+    checkItemItemCollision(walker, other, function(side, walker, other) {
       if(walker.isIt === true) {
-        walker.posX = 0;
+        other.isIt = true;
+        walker.isIt = false;
+
+        resetGameItems();
       }
     });
     //update movement check. could be used for sprites
@@ -290,6 +292,16 @@ function runProgram(){
     if(Math.abs(item.velY) < 0.05) {
       item.velY = 0;
     }
+  }
+
+  function resetGameItems() {
+    walker1.posX = 0;
+    walker1.posY = 0;
+
+    walker2.posX = board.width - walker2.width;
+    walker2.posY = board.height - walker2.height;
+
+    walker1.velX, walker1.velY, walker2.velX, walker2.velY = 0;
   }
 
   function endGame() {
