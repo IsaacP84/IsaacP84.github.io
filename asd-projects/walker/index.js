@@ -10,7 +10,7 @@ function runProgram(){
   // Constant Variables
   var FRAME_RATE = 60;
   var FRAMES_PER_SECOND_INTERVAL = 1000 / FRAME_RATE;
-  var FRICTION = 1;
+  var FRICTION = 0.9;
 
   var KEY = {
     ENTER: 13,
