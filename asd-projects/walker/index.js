@@ -26,8 +26,17 @@ function runProgram(){
 
   
   // Game Item Objects
+  var board = {
+    id: "board",
+    width: 440,
+    height: 440
+  }
+
+  //uses ARROWS
   var walker1 = {
     id: "walker1",
+    width: 50,
+    height: 50,
     posX: 0,
     posY: 0,
     velX: 0,
@@ -43,9 +52,12 @@ function runProgram(){
     }
   };
 
+  //uses WASD
   var walker2 = {
     id: "walker2",
-    posX: 100,
+    width: 50,
+    height: 50,
+    posX: 0,
     posY: 0,
     velX: 0,
     velY: 0,
@@ -59,6 +71,9 @@ function runProgram(){
       d: false
     }
   };
+  //set walker2 placement
+  walker2.posX = board.width - walker2.width;
+  walker2.posY = board.height - walker2.height;
 
   // one-time setup
   var interval = setInterval(newFrame, FRAMES_PER_SECOND_INTERVAL);   // execute newFrame every 0.0166 seconds (60 Frames per second)
@@ -76,11 +91,9 @@ function runProgram(){
   function newFrame() {
     //could make a for loop if adding more walkers
     updateWalker(walker1);
-    repositionGameItem(walker1);
     redrawGameItem(walker1, walker1.posX, walker1.posY);
 
     updateWalker(walker2);
-    repositionGameItem(walker2);
     redrawGameItem(walker2, walker2.posX, walker2.posY);
   }
   
@@ -160,7 +173,30 @@ function runProgram(){
     } else if(walker.movement.d) {
       walker.velY = walker.speed;
     }
+    //reposition first to stop spazzy collisions
+    repositionGameItem(walker);
+    //check collision and pass in/define function to be executed if true
+    checkBoardCollision(walker, function(side) {
+      if(side == "top") {
+        walker.velY = 0;
+        walker.posY = 0;
+      }
 
+      if(side == "bottom") {
+        walker.velY = 0;
+        walker.posY = board.height - walker.height;
+      }
+
+      if(side == "left") {
+        walker.velX = 0;
+        walker.posX = 0;
+      }
+
+      if(side == "right") {
+        walker.velX = 0;
+        walker.posX = board.width - walker.width;
+      }
+    });
     //update movement check. could be used for sprites
     if(walker.velX !== 0 || walker.velY !== 0) {
       walker.movement.moving = true;
@@ -180,6 +216,21 @@ function runProgram(){
   function redrawGameItem(item, x, y) {
     $(`#${item.id}`).css("left", x);
     $(`#${item.id}`).css("top", y);
+  }
+
+  function checkBoardCollision(item, onCollision) {
+    if(item.posY < 0) {
+      onCollision("top");
+    }
+    if(item.posY + item.height > board.height) {
+      onCollision("bottom");
+    }
+    if(item.posX < 0) {
+      onCollision("left");
+    }
+    if(item.posX + item.width > board.height) {
+      onCollision("right");
+    }
   }
 
   function friction(item, mult=FRICTION) {
