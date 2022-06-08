@@ -42,6 +42,8 @@ function runProgram(){
     velX: 0,
     velY: 0,
     speed: 3,
+    //tag
+    isIt: true,
     //events are weird. Makes movement accurate
     movement: {
       moving: false,
@@ -62,6 +64,8 @@ function runProgram(){
     velX: 0,
     velY: 0,
     speed: 3,
+    //tag
+    isIt: false,
     //events are weird. Makes movement accurate
     movement: {
       moving: false,
@@ -197,6 +201,18 @@ function runProgram(){
         walker.posX = board.width - walker.width;
       }
     });
+
+    var other;
+    if(walker1 == walker) {
+      other = walker2;
+    } else {
+      other = walker1;
+    }
+    checkItemItemCollision(walker, other, function(side, walker) {
+      if(walker.isIt === true) {
+        walker.posX = 0;
+      }
+    });
     //update movement check. could be used for sprites
     if(walker.velX !== 0 || walker.velY !== 0) {
       walker.movement.moving = true;
@@ -216,6 +232,12 @@ function runProgram(){
   function redrawGameItem(item, x, y) {
     $(`#${item.id}`).css("left", x);
     $(`#${item.id}`).css("top", y);
+
+    if(item.isIt) {
+      $(`#${item.id}`).css("background-color", "maroon");
+    } else {
+      $(`#${item.id}`).css("background-color", "teal");
+    }
   }
 
   function checkBoardCollision(item, onCollision) {
@@ -230,6 +252,30 @@ function runProgram(){
     }
     if(item.posX + item.width > board.height) {
       onCollision("right");
+    }
+  }
+
+  function checkItemItemCollision(item1, item2, onCollision) {
+    if((item1.posX + item1.width > item2.posX && item1.posX < item2.posX + item2.width)
+      && (item1.posY + item1.height > item2.posY && item1.posY < item2.posY + item2.height)) {
+        //if distance on x is greater than distance on y
+        if(Math.abs((item1.posX + item1.width/2) - (item2.posX + item2.width/2))
+          > Math.abs((item1.posY + item1.height/2) - (item2.posY + item2.height/2))) {
+          if(item1.posX + item1.width/2 < item2.posX + item2.width/2) {
+            onCollision("right", item1, item2);
+          } else {
+            onCollision("left", item1, item2);
+          }
+        } else {
+          if(item1.posY + item1.height/2 < item2.posY + item2.height/2) {
+            onCollision("top", item1, item2);
+          } else {
+            onCollision("bottom", item1, item2);
+          }
+        }
+
+      
+      
     }
   }
 

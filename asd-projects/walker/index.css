@@ -17,7 +17,13 @@ body {
   height: 50px;
   position: absolute;
 
+  text-align: center;
   border-radius: 7px;
 /*   left: 100px; */  /* Uncomment if you want to set a "starting" position */
 /*   top: 100px;  */  /* Uncomment if you want to set a "starting" position */
+}
+
+p.score {
+  position: relative;
+  bottom: 20px;
 }
