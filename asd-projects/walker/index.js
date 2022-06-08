@@ -10,35 +10,55 @@ function runProgram(){
   // Constant Variables
   var FRAME_RATE = 60;
   var FRAMES_PER_SECOND_INTERVAL = 1000 / FRAME_RATE;
-  var FRICTION = 0.7;
+  var FRICTION = 0.9;
 
   var KEY = {
     ENTER: 13,
     LEFT: 37,
     UP: 38,
     RIGHT: 39,
-    DOWN: 40
+    DOWN: 40,
+    A: 65,
+    W: 87,
+    D: 68,
+    S: 83
   };
 
-  //adding in a placeholder because events are weird
-  var MOVEMENT = {
-    l: false,
-    u: false,
-    r: false,
-    d: false
-  }
-
-  var walker = {
-    id: "walker",
+  
+  // Game Item Objects
+  var walker1 = {
+    id: "walker1",
     posX: 0,
     posY: 0,
     velX: 0,
     velY: 0,
     speed: 3,
-    moving: false
+    //events are weird. Makes movement accurate
+    movement: {
+      moving: false,
+      l: false,
+      u: false,
+      r: false,
+      d: false
+    }
   };
-  // Game Item Objects
 
+  var walker2 = {
+    id: "walker2",
+    posX: 100,
+    posY: 0,
+    velX: 0,
+    velY: 0,
+    speed: 3,
+    //events are weird. Makes movement accurate
+    movement: {
+      moving: false,
+      l: false,
+      u: false,
+      r: false,
+      d: false
+    }
+  };
 
   // one-time setup
   var interval = setInterval(newFrame, FRAMES_PER_SECOND_INTERVAL);   // execute newFrame every 0.0166 seconds (60 Frames per second)
@@ -54,61 +74,68 @@ function runProgram(){
   by calling this function and executing the code inside.
   */
   function newFrame() {
-    repositionGameItem(walker);
-    redrawGameItem(walker, walker.posX, walker.posY);
+    //could make a for loop if adding more walkers
+    updateWalker(walker1);
+    repositionGameItem(walker1);
+    redrawGameItem(walker1, walker1.posX, walker1.posY);
 
-    if(!walker.moving) {
-      friction(walker, FRICTION);
-    }
+    updateWalker(walker2);
+    repositionGameItem(walker2);
+    redrawGameItem(walker2, walker2.posX, walker2.posY);
   }
   
   /* 
   Called in response to events.
   */
   function handleKeyDown(event) {
-    console.log(event.which)
-    let temp = {x: walker.velX, y:walker.velY};
     if(event.which == KEY.ENTER) {
-      console.log("enter");
-    } else if(event.which == KEY.LEFT) {
-      walker.velX = -walker.speed;
-      MOVEMENT.l = true;
+      //doesnt do anything
+    }
+    
+    //walker1
+    if(event.which == KEY.LEFT) {
+      walker1.movement.l = true;
     } else if(event.which == KEY.UP) {
-      walker.velY = -walker.speed;
-      MOVEMENT.u = true;
+      walker1.movement.u = true;
     } else if(event.which == KEY.RIGHT) {
-      walker.velX = walker.speed;
-      MOVEMENT.r = true;
+      walker1.movement.r = true;
     } else if(event.which == KEY.DOWN) {
-      walker.velY = walker.speed;
-      MOVEMENT.d = true;
+      walker1.movement.d = true;
     }
 
-    //long XOR
-    if(((MOVEMENT.l || MOVEMENT.r) && !(MOVEMENT.l && MOVEMENT.r)) 
-        || ((MOVEMENT.u || MOVEMENT.d) && !(MOVEMENT.u && MOVEMENT.d))) {
-      walker.moving = true;
+    //walker2
+    if(event.which == KEY.A) {
+      walker2.movement.l = true;
+    } else if(event.which == KEY.W) {
+      walker2.movement.u = true;
+    } else if(event.which == KEY.D) {
+      walker2.movement.r = true;
+    } else if(event.which == KEY.S) {
+      walker2.movement.d = true;
     }
   }
 
   function handleKeyUp(event) {
-    // if(event.which == KEY.LEFT || event.which == KEY.UP || event.which == KEY.RIGHT || event.which == KEY.DOWN) {
-    //   walker.moving = false;
-    // }
-
+    //walker1
     if(event.which == KEY.LEFT) {
-      MOVEMENT.l = false;
+      walker1.movement.l = false;
     } else if(event.which == KEY.UP) {
-      MOVEMENT.u = false;
+      walker1.movement.u = false;
     } else if(event.which == KEY.RIGHT) {
-      MOVEMENT.r = false;
+      walker1.movement.r = false;
     } else if(event.which == KEY.DOWN) {
-      MOVEMENT.d = false;
+      walker1.movement.d = false;
     }
 
-    if(!((MOVEMENT.l || MOVEMENT.r) && !(MOVEMENT.l && MOVEMENT.r)) 
-        || !((MOVEMENT.u || MOVEMENT.d) && !(MOVEMENT.u && MOVEMENT.d))) {
-      walker.moving = false;
+    //walker2
+    if(event.which == KEY.A) {
+      walker2.movement.l = false;
+    } else if(event.which == KEY.W) {
+      walker2.movement.u = false;
+    } else if(event.which == KEY.D) {
+      walker2.movement.r = false;
+    } else if(event.which == KEY.S) {
+      walker2.movement.d = false;
     }
   }
 
@@ -116,6 +143,35 @@ function runProgram(){
   ////////////////////////// HELPER FUNCTIONS ////////////////////////////////////
   ////////////////////////////////////////////////////////////////////////////////
 
+  function updateWalker(walker) {
+    //could make this function built into the walker objects
+    if(walker.movement.l && walker.movement.r) {
+      //do nothing
+    } else if(walker.movement.l) {
+      walker.velX = -walker.speed;
+    } else if(walker.movement.r) {
+      walker.velX = walker.speed;
+    }
+
+    if(walker.movement.u && walker.movement.d) {
+      //do nothing
+    } else if(walker.movement.u) {
+      walker.velY = -walker.speed;
+    } else if(walker.movement.d) {
+      walker.velY = walker.speed;
+    }
+
+    //update movement check. could be used for sprites
+    if(walker.velX !== 0 || walker.velY !== 0) {
+      walker.movement.moving = true;
+    } else {
+      walker.movement.moving = false;
+    }
+    
+    friction(walker);
+  }
+  
+  
   function repositionGameItem(item) {
     item.posX += item.velX;
     item.posY += item.velY;
@@ -126,7 +182,7 @@ function runProgram(){
     $(`#${item.id}`).css("top", y);
   }
 
-  function friction(item, mult=0.5) {
+  function friction(item, mult=FRICTION) {
     item.velX *= mult;
     item.velY *= mult;
 
