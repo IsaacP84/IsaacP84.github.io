@@ -3,6 +3,7 @@
 $(document).ready(function () {
   render($("#display"), image);
   $("#apply").on("click", applyAndRender);
+  $("#smudge").on("click", ar_Smudge);
   $("#reset").on("click", resetAndRender);
 });
 
@@ -24,8 +25,12 @@ function applyAndRender() {
   applyFilter(decreaseBlue);
   applyFilterNoBackground(reddify);
 
-
   // do not change the below line of code
+  render($("#display"), image);
+}
+
+function ar_Smudge() {
+  applyFilter(smudge);
   render($("#display"), image);
 }
 
@@ -35,14 +40,15 @@ function applyAndRender() {
 
 // TODO 1, 2 & 4: Create the applyFilter function here
 function applyFilter(filterFunction) {
-  for(let i in image) {
-    for(let j in image[i]) {
-      //prob a shorter way to do this
-      var rgbString = image[i][j];
-      var rgbNumbers = rgbStringToArray(rgbString);
+  //have to do the long way here
+  //es6 brings in the array methods
+  for(let i = 0; i < image.length; i++) {
+    for(let j = 0; j < image[i].length; j++) {
+      //got rid of rgbString
+      //i could get rid of rgbNumber too
+      var rgbNumbers = rgbStringToArray(image[i][j]);
       filterFunction(rgbNumbers, i, j);
-      rgbString = rgbArrayToString(rgbNumbers);
-      image[i][j] = rgbString;
+      image[i][j] = rgbArrayToString(rgbNumbers);
     }
   }
 }
@@ -50,15 +56,14 @@ function applyFilter(filterFunction) {
 // TODO 7: Create the applyFilterNoBackground function
 function applyFilterNoBackground(filterFunction) {
   var backgroundColor = image[0][0];
-  for(let i in image) {
-    for(let j in image[i]) {
+  for(let i = 0; i < image.length; i++) {
+    for(let j = 0; j < image[i].length; j++) {
       if(image[i][j] != backgroundColor) {
-        //prob a shorter way to do this
-        var rgbString = image[i][j];
-        var rgbNumbers = rgbStringToArray(rgbString);
+        //got rid of rgbString
+        //i could get rid of rgbNumber too
+        var rgbNumbers = rgbStringToArray(image[i][j]);
         filterFunction(rgbNumbers, i, j);
-        rgbString = rgbArrayToString(rgbNumbers);
-        image[i][j] = rgbString;
+        image[i][j] = rgbArrayToString(rgbNumbers);
       }
     }
   }
@@ -86,3 +91,14 @@ function increaseGreenByBlue(arr) {
 }
 
 // CHALLENGE code goes below here
+
+function smudge(arr, x, y, val = 0.5) {
+  //Fades away
+  if(image[x][y+1]) {
+    console.log(x, y);
+    let arr2 = rgbStringToArray(image[x][y+1]);
+    arr[RED] = arr2[RED] * val;
+    arr[GREEN] = arr2[GREEN] * val;
+    arr[BLUE] = arr2[BLUE] * val;
+  }
+}
