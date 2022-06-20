@@ -3,6 +3,7 @@ The player(s) can move a paddle up and down.
 If the ball hits the paddle, it bounces off and reflects.
 If the ball passes a player's paddle, the other player gains a point.
     After, the ball is reset.
+Could possibly maybe might have multiple balls 
 
 Will need variable for the ball's position and speed.
 Will need variable for the paddles' y positions.
