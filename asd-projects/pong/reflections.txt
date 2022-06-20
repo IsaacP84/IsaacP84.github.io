@@ -29,6 +29,7 @@ Visual Game Concepts:
             -Animated
             PosX, PosY
             SpeedX, SpeedY
+            (?) Speed, Angle instead off Speed, SpeedY
             radius or width/height
         The board
             -Static
