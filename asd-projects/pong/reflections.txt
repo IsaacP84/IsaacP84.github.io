@@ -1,0 +1,43 @@
+A ball travels back and forth between one side to the other.
+The player(s) can move a paddle up and down.
+If the ball hits the paddle, it bounces off and reflects.
+If the ball passes a player's paddle, the other player gains a point.
+    After, the ball is reset.
+
+Will need variable for the ball's position and speed.
+Will need variable for the paddles' y positions.
+Will need a score variable.
+
+The game doesn't need an end, but the game could end when a players score reaches a certain value.
+
+Ifs:
+    If the ball is touching the paddle
+    If the ball is past the paddle
+    If the score is greater than an amount
+    If the paddles are further than an amount
+
+Visual Game Concepts:
+    Components:
+        The paddles
+            -Animated
+            Points
+            PosY
+            SpeedY
+            Constant PosX
+            width/height
+        The ball
+            -Animated
+            PosX, PosY
+            SpeedX, SpeedY
+            radius or width/height
+        The board
+            -Static
+            width/height
+
+Logic:
+    Maybe a click to start
+    A timer for when the ball resets
+    Up/down arrow keys
+        changes the paddle position for player 2
+    W/A keys
+        changes the paddle position for player 1
