@@ -14,9 +14,9 @@ function runProgram(){
   //higher number, more precise
   const PHYSICS_FRAMES = 5;
 
-  //some one line code to get the board width/height
-  const WIDTH = Number($("#board").css("width").replace("px", ''));
-  const HEIGHT = Number($("#board").css("height").replace("px", ''));
+  //get the board width/height
+  const WIDTH = $("#board").width();
+  const HEIGHT = $("#board").height();
 
   var KEY = {
     ENTER: 13,
@@ -36,9 +36,10 @@ function runProgram(){
       id: "ball",
       x: 0,
       y: 0,
-      speed: 1,
-      //gets a random angle between 0 and 2pi
-      angle: Math.random() * (2*Math.PI)
+      width: 10,
+      height: 10,
+      speed: 0.75,
+      angle: 0
     },
     {
       id: "paddle1",
@@ -46,14 +47,9 @@ function runProgram(){
       height: 100,
       x: 0,
       y: 0,
-      speed: 1,
-      movement: {
-        moving: false,
-        l: false,
-        u: false,
-        r: false,
-        d: false
-      }
+      speed: 2,
+
+      score: 0
     },
     {
       id: "paddle2",
@@ -61,14 +57,9 @@ function runProgram(){
       height: 100,
       x: 0,
       y: 0,
-      speed: 1,
-      movement: {
-        moving: false,
-        l: false,
-        u: false,
-        r: false,
-        d: false
-      }
+      speed: 2,
+      
+      score: 0
     }
   ];
   
@@ -98,13 +89,13 @@ function runProgram(){
   */
   function newFrame() {
     drawGameItems();
-    
     //for better physics
     for(let i = 0; i < PHYSICS_FRAMES; i++) {
       updateGameItem(ball);
       updateGameItem(paddle1);
       updateGameItem(paddle2);
     }
+
   }
   
   /* 
@@ -153,7 +144,7 @@ function runProgram(){
 
   function updateGameItem(object) {
     //changes the movement speed so that it scales with the board
-    let boardRatio = HEIGHT/100;
+    let boardRatio = HEIGHT/200;
     if(object.movement) {
       //wont need a vel bc no friction and simple physics
       if(object.movement.l && object.movement.r) {
@@ -171,35 +162,67 @@ function runProgram(){
       } else if(object.movement.d) {
         object.y += object.speed * boardRatio * (1/PHYSICS_FRAMES);
       }
+
+      // check collision and pass in/define function to be executed if true
+      checkBoardCollision(object, function(side) {
+        if(side == "top") {
+          object.velY = 0;
+          object.y = 0;
+        }
+
+        if(side == "bottom") {
+          object.velY = 0;
+          object.y = HEIGHT - object.height;
+        }
+      });
     } else if(true) {
       //the stuff for the ball
+
+      //trig is fun
+      object.x += Math.cos(object.angle) * object.speed;
+      object.y += Math.sin(object.angle) * object.speed;
+
+      // check collision and pass in/define function to be executed if true
+      checkBoardCollision(object, function(side) {
+        // let alpha = Math.abs(object.angle);
+        // if(alpha > Math.PI) alpha -= Math.PI;
+        // if(alpha > Math.PI / 2) alpha = Math.PI - alpha;
+        // if(object.angle > Math.PI * 2) {
+        //   let angle = object.angle % Math.PI * 2;
+        //   object.angle = angle;
+        // } else if (object.angle < 0) {
+
+        // }
+
+        
+        
+        if(side == "top") {
+          object.angle = -object.angle;
+          // console.log(object.angle * (180 / Math.PI))
+          // object.angle = 0;
+        }
+
+        if(side == "bottom") {
+          object.angle = -object.angle;
+          if(object.angle < Math.PI) {
+            // object.angle = Math.PI + object.angle;
+          }
+          // object.angle = -Math.PI;
+        }
+
+        if(side == "left") {
+          paddle2.score++;
+          resetItems();
+        }
+
+        if(side == "right") {
+          paddle1.score++;
+          resetItems();
+        }
+      });
     }
     //reposition first to stop spazzy collisions
     // drawGameItem(object);
-
-
-    //check collision and pass in/define function to be executed if true
-    // checkBoardCollision(walker, function(side) {
-    //   if(side == "top") {
-    //     walker.velY = 0;
-    //     walker.posY = 0;
-    //   }
-
-    //   if(side == "bottom") {
-    //     walker.velY = 0;
-    //     walker.posY = board.height - walker.height;
-    //   }
-
-    //   if(side == "left") {
-    //     walker.velX = 0;
-    //     walker.posX = 0;
-    //   }
-
-    //   if(side == "right") {
-    //     walker.velX = 0;
-    //     walker.posX = board.width - walker.width;
-    //   }
-    // });
 
     // var other;
     // if(walker1 == walker) {
@@ -223,20 +246,67 @@ function runProgram(){
     // }
   }
 
+  function checkBoardCollision(item, onCollision) {
+    if(item.y < 0) {
+      onCollision("top");
+    }
+    if(item.y + item.height > HEIGHT) {
+      onCollision("bottom");
+    }
+    if(item.x < 0) {
+      onCollision("left");
+    }
+    if(item.x + item.width > WIDTH) {
+      onCollision("right");
+    }
+  }
+
+  function checkItemItemCollision(item1, item2, onCollision) {
+    if((item1.x + item1.width > item2.x && item1.x < item2.x + item2.width)
+      && (item1.y + item1.height > item2.y && item1.y < item2.y + item2.height)) {
+        //if distance on x is greater than distance on y
+        if(Math.abs((item1.x + item1.width/2) - (item2.x + item2.width/2))
+          > Math.abs((item1.y + item1.height/2) - (item2.y + item2.height/2))) {
+          if(item1.x + item1.width/2 < item2.x + item2.width/2) {
+            onCollision("right", item1, item2);
+          } else {
+            onCollision("left", item1, item2);
+          }
+        } else {
+          if(item1.y + item1.height/2 < item2.y + item2.height/2) {
+            onCollision("top", item1, item2);
+          } else {
+            onCollision("bottom", item1, item2);
+          }
+        }
+
+      
+      
+    }
+  }
+
   function drawGameItems() {
     //the x/y is the center of the object
     //will draw with that in mind
     $(`#${ball.id}`).css("left", `${ball.x - ball.width/2}px`)
-                       .css("top", `${ball.y - ball.height/2}px`);
+                    .css("top", `${ball.y - ball.height/2}px`);
     $(`#${paddle1.id}`).css("left", `${paddle1.x - paddle1.width/2}px`)
                        .css("top", `${paddle1.y - paddle1.height/2}px`);
     $(`#${paddle2.id}`).css("left", `${paddle2.x - paddle2.width/2}px`)
                        .css("top", `${paddle2.y - paddle2.height/2}px`);
+
+    $("#score1").text(paddle1.score);
+    $("#score2").text(paddle2.score);
   }
   
   function resetItems() {
     //ball
     ball.x = WIDTH/2;
+    ball.y = HEIGHT/2;
+    ball.angle = 
+                 (Math.random() < 0 ? -Math.PI / 2 : Math.PI / 2)    //picks a left or right direction
+               + (Math.PI/4)                                         //tilts it by an eighth of a rotation
+               + (Math.random() * (Math.PI / 2));                    //adds a random tilt less than a quarter rotation
 
     //paddle1
     paddle1.y = HEIGHT/2;
@@ -248,6 +318,7 @@ function runProgram(){
       r: false,
       d: false
     };
+    
     //paddle2
     paddle2.y = HEIGHT/2;
     paddle2.x = WIDTH - 60;
