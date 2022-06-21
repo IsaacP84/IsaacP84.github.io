@@ -31,6 +31,7 @@ function runProgram(){
   };
   
   // Game Item Objects
+  var balls = [new Ball()];
   var [ball, paddle1, paddle2] = [
     {
       id: "ball",
@@ -62,6 +63,28 @@ function runProgram(){
       score: 0
     }
   ];
+
+    //object definitions
+    function Ball(x, y, idNum, speed = undefined) {
+      //multi purpose parameters
+      if(typeof idNum == "string") {
+        this.id = idNum;
+        this.idNum = parseFloat(idNum.replace(/ball/i, ''));
+      } else {
+        this.id = "ball" + idNum;
+        this.idNum = idNum;
+      }
+      
+      [this.x, this.y] = [x, y];
+      [this.width, this.height] = [10, 10];
+      //don't worry about this frn. ill deal with it later
+      this.speed = speed ? 0.75 : speed;
+      this.angle = 
+                 (Math.random() < 0 ? -Math.PI / 2 : Math.PI / 2)    //picks a left or right direction
+               + (Math.PI/4)                                         //tilts it by an eighth of a rotation
+               + (Math.random() * (Math.PI / 2));                    //adds a random tilt less than a quarter rotation
+      balls.push(this);
+    }
   
 
 
@@ -301,13 +324,10 @@ function runProgram(){
   
   function resetItems() {
     //ball
-    ball.x = WIDTH/2;
-    ball.y = HEIGHT/2;
-    ball.angle = 
-                 (Math.random() < 0 ? -Math.PI / 2 : Math.PI / 2)    //picks a left or right direction
-               + (Math.PI/4)                                         //tilts it by an eighth of a rotation
-               + (Math.random() * (Math.PI / 2));                    //adds a random tilt less than a quarter rotation
-
+    for(let ball of balls) {
+      ball = new Ball(WIDTH/2, HEIGHT/2, ball.id);
+    }
+    
     //paddle1
     paddle1.y = HEIGHT/2;
     paddle1.x = 60;
@@ -318,7 +338,7 @@ function runProgram(){
       r: false,
       d: false
     };
-    
+
     //paddle2
     paddle2.y = HEIGHT/2;
     paddle2.x = WIDTH - 60;
