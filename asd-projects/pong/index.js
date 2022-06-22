@@ -77,7 +77,6 @@ function runProgram(){
     
     if($(`#${this.id}`).length === 0) {
       //couldn't find a matching ball
-      console.log(`#${this.id}`);
       $(`<div id="${this.id}" class="ball"></div>`).appendTo("#board");
     }
 
@@ -88,10 +87,15 @@ function runProgram(){
     ];
     //don't worry about this frn. ill deal with it later
     this.speed = speed ? speed : 1.5;
+    let a = Math.random() * (Math.PI / 2);
+    while(Math.abs(a - Math.PI/4) < Math.PI / 15) {
+      a = Math.random() * (Math.PI / 2);
+    }
+    console.log(Math.PI / 15 * Math.sign(a - Math.PI/4) )
     this.angle = 
                 (Math.random() < 0.5 ? -Math.PI / 2 : Math.PI / 2)    //picks a left or right direction
               + (Math.PI/4)                                         //tilts it by an eighth of a rotation
-              + (Math.random() * (Math.PI / 2));                    //adds a random tilt less than a quarter rotation
+              + a;              //adds a random tilt less than a quarter rotation
     this.die = function() {
       let temp = [];
       $(`#${this.id}`).remove()
@@ -249,7 +253,7 @@ function runProgram(){
           }
           object.die();
           if(balls.length == 0) {
-            resetItems();
+            endRound();
           }
         }
       });
@@ -318,8 +322,8 @@ function runProgram(){
     $(`#${paddle2.id}`).css("left", `${paddle2.x - paddle2.width/2}px`)
                        .css("top", `${paddle2.y - paddle2.height/2}px`);
 
-    $("#score1").text(paddle1.score);
-    $("#score2").text(paddle2.score);
+    $("#score1").text("P1: " + paddle1.score);
+    $("#score2").text("P2: " + paddle2.score);
   }
   
   function resetItems() {
@@ -334,7 +338,7 @@ function runProgram(){
     }
 
     //could have 1 be variable like minBalls
-    while(balls.length < 1) {
+    while(balls.length < 10) {
       balls.push(new ball(WIDTH/2, HEIGHT/2, balls.length));
     }
 
@@ -361,6 +365,10 @@ function runProgram(){
       r: false,
       d: false
     };
+  }
+
+  function endRound() {
+    resetItems();
   }
 
   function endGame() {
