@@ -212,15 +212,13 @@ function runProgram(){
 
       // check collision and pass in/define function to be executed if true
       checkBoardCollision(object, function(side) {
-        // if(side == "top") {
-        //   object.velY = 0;
-        //   object.y = 0;
-        // }
-
-        // if(side == "bottom") {
-        //   object.velY = 0;
-        //   object.y = HEIGHT - object.height;
-        // }
+        if(side == "top") {
+          object.y = 0 + object.height/2;
+        }
+        if(side == "bottom") {
+          object.y = HEIGHT - object.height/2;
+        }
+        
       });
     } else if(true) {
       //the stuff for the ball
