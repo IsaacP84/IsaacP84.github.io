@@ -82,13 +82,26 @@ function runProgram(){
     }
 
     [this.x, this.y] = [x, y];
-    [this.width, this.height] = [10, 10];
+    [this.width, this.height] = [
+      $(`#${this.id}`).width(),
+      $(`#${this.id}`).height()
+    ];
     //don't worry about this frn. ill deal with it later
-    this.speed = speed ? speed : 0.75;
+    this.speed = speed ? speed : 1.5;
     this.angle = 
-                (Math.random() < 0 ? -Math.PI / 2 : Math.PI / 2)    //picks a left or right direction
+                (Math.random() < 0.5 ? -Math.PI / 2 : Math.PI / 2)    //picks a left or right direction
               + (Math.PI/4)                                         //tilts it by an eighth of a rotation
               + (Math.random() * (Math.PI / 2));                    //adds a random tilt less than a quarter rotation
+    this.die = function() {
+      let temp = [];
+      $(`#${this.id}`).remove()
+      for(let ball of balls) {
+        if(ball !== this) {
+          temp.push(ball);
+        }
+      }
+      balls = temp;
+    }
   }
   
 
@@ -209,23 +222,11 @@ function runProgram(){
       //the stuff for the ball
 
       //trig is fun
-      object.x += Math.cos(object.angle) * object.speed;
-      object.y += Math.sin(object.angle) * object.speed;
+      object.x += Math.cos(object.angle) * object.speed * boardRatio * (1/PHYSICS_FRAMES);
+      object.y += Math.sin(object.angle) * object.speed * boardRatio * (1/PHYSICS_FRAMES);
 
       // check collision and pass in/define function to be executed if true
       checkBoardCollision(object, function(side) {
-        // let alpha = Math.abs(object.angle);
-        // if(alpha > Math.PI) alpha -= Math.PI;
-        // if(alpha > Math.PI / 2) alpha = Math.PI - alpha;
-        // if(object.angle > Math.PI * 2) {
-        //   let angle = object.angle % Math.PI * 2;
-        //   object.angle = angle;
-        // } else if (object.angle < 0) {
-
-        // }
-
-        
-        
         if(side == "top") {
           object.angle = -object.angle;
           // console.log(object.angle * (180 / Math.PI))
@@ -235,20 +236,38 @@ function runProgram(){
         if(side == "bottom") {
           object.angle = -object.angle;
           if(object.angle < Math.PI) {
-            // object.angle = Math.PI + object.angle;
           }
-          // object.angle = -Math.PI;
         }
 
-        if(side == "left") {
-          paddle2.score++;
-          resetItems();
-        }
+        if(side == "left" || side == "right") {
+          if(side == "left") {
+            paddle2.score++;
+          }
 
-        if(side == "right") {
-          paddle1.score++;
-          resetItems();
+          if(side == "right") {
+            paddle1.score++;
+          }
+          object.die();
+          if(balls.length == 0) {
+            resetItems();
+          }
         }
+      });
+
+      checkItemItemCollision(object, paddle1, function(side, ball, paddle){
+        console.log("paddle1");
+        // ball.speed = 0;
+        ball.angle += Math.PI;
+
+      });
+
+      checkItemItemCollision(object, paddle2, function(side, ball, paddle){
+        console.log("paddle2", side);
+        // ball.angle += Math.PI/2;
+        // ball.angle *= -1;
+        // ball.angle -= Math.PI/2;
+        // ball.speed = 0;
+        ball.x = paddle.x - paddle.width/2 - ball.width/2;
       });
     }
     //reposition first to stop spazzy collisions
@@ -292,26 +311,21 @@ function runProgram(){
   }
 
   function checkItemItemCollision(item1, item2, onCollision) {
-    if((item1.x + item1.width > item2.x && item1.x < item2.x + item2.width)
-      && (item1.y + item1.height > item2.y && item1.y < item2.y + item2.height)) {
-        //if distance on x is greater than distance on y
-        if(Math.abs((item1.x + item1.width/2) - (item2.x + item2.width/2))
-          > Math.abs((item1.y + item1.height/2) - (item2.y + item2.height/2))) {
-          if(item1.x + item1.width/2 < item2.x + item2.width/2) {
-            onCollision("right", item1, item2);
-          } else {
-            onCollision("left", item1, item2);
-          }
-        } else {
-          if(item1.y + item1.height/2 < item2.y + item2.height/2) {
-            onCollision("top", item1, item2);
-          } else {
-            onCollision("bottom", item1, item2);
+    if((item1.x + item1.width/2 > item2.x - item2.width/2 && (item1.x - item1.width/2 < item2.x + item2.width/2))
+      && (item1.y + item1.height/2 > item2.y - item2.height/2 && item1.y - item1.width/2 < item2.y + item2.height/2)) {        
+        let distance = {
+          right: Math.abs((item1.x + item1.width/2) - (item2.x - item2.width/2)),
+          left: Math.abs((item1.x - item1.width/2) - (item2.x + item2.width/2)),
+          top: Math.abs((item1.y + item1.height/2) - (item2.y - item2.height/2)),
+          bottom: Math.abs((item1.y - item1.height/2) - (item2.y + item2.height/2))
+        };
+        let best;
+        for(let side in distance) {
+          if(!(distance[side] >= distance[best])) {
+            best = side;
           }
         }
-
-      
-      
+        onCollision(best, item1, item2);
     }
   }
 
@@ -333,18 +347,19 @@ function runProgram(){
   
   function resetItems() {
     //ball
-    // for(let i in balls) {
-    //   //might need to fix wackiness with i
-    //   if(balls[i].id) {
-    //     balls[i] = new ball(WIDTH/2, HEIGHT/2, balls[i].id);
-    //   } else {
-    //     balls[i] = new ball(WIDTH/2, HEIGHT/2, Number(balls[i].id));
-    //   }
-    // }
+    for(let i in balls) {
+      //might need to fix wackiness with i
+      if(balls[i].id) {
+        balls[i] = new ball(WIDTH/2, HEIGHT/2, balls[i].id);
+      } else {
+        balls[i] = new ball(WIDTH/2, HEIGHT/2, Number(balls[i].id));
+      }
+    }
 
     //could have 1 be variable like minBalls
     while(balls.length < 1) {
       balls.push(new ball(WIDTH/2, HEIGHT/2, balls.length));
+      balls[0].angle = 0;
     }
 
     
