@@ -208,15 +208,15 @@ function runProgram(){
 
       // check collision and pass in/define function to be executed if true
       checkBoardCollision(object, function(side) {
-        if(side == "top") {
-          object.velY = 0;
-          object.y = 0;
-        }
+        // if(side == "top") {
+        //   object.velY = 0;
+        //   object.y = 0;
+        // }
 
-        if(side == "bottom") {
-          object.velY = 0;
-          object.y = HEIGHT - object.height;
-        }
+        // if(side == "bottom") {
+        //   object.velY = 0;
+        //   object.y = HEIGHT - object.height;
+        // }
       });
     } else if(true) {
       //the stuff for the ball
@@ -255,57 +255,34 @@ function runProgram(){
       });
 
       checkItemItemCollision(object, paddle1, function(side, ball, paddle){
-        console.log("paddle1");
-        // ball.speed = 0;
-        ball.angle += Math.PI;
-
+        console.log("paddle1", side);
+        ball.angle += Math.PI/2;
+        ball.angle *= -1;
+        ball.angle -= Math.PI/2;
       });
 
       checkItemItemCollision(object, paddle2, function(side, ball, paddle){
         console.log("paddle2", side);
-        // ball.angle += Math.PI/2;
-        // ball.angle *= -1;
-        // ball.angle -= Math.PI/2;
+        ball.angle += Math.PI/2;
+        ball.angle *= -1;
+        ball.angle -= Math.PI/2;
         // ball.speed = 0;
-        ball.x = paddle.x - paddle.width/2 - ball.width/2;
+        // ball.x = paddle.x - paddle.width/2 - ball.width/2;
       });
     }
-    //reposition first to stop spazzy collisions
-    // drawGameItem(object);
-
-    // var other;
-    // if(walker1 == walker) {
-    //   other = walker2;
-    // } else {
-    //   other = walker1;
-    // }
-    // checkItemItemCollision(walker, other, function(side, walker, other) {
-    //   if(walker.isIt === true) {
-    //     other.isIt = true;
-    //     walker.isIt = false;
-
-    //     resetGameItems();
-    //   }
-    // });
-    //update movement check. could be used for sprites
-    // if(walker.velX !== 0 || walker.velY !== 0) {
-    //   walker.movement.moving = true;
-    // } else {
-    //   walker.movement.moving = false;
-    // }
   }
 
   function checkBoardCollision(item, onCollision) {
-    if(item.y < 0) {
+    if(item.y - item.height/2 < 0) {
       onCollision("top");
     }
-    if(item.y + item.height > HEIGHT) {
+    if(item.y + item.height/2 > HEIGHT) {
       onCollision("bottom");
     }
-    if(item.x < 0) {
+    if(item.x - item.width/2 < 0) {
       onCollision("left");
     }
-    if(item.x + item.width > WIDTH) {
+    if(item.x + item.width/2 > WIDTH) {
       onCollision("right");
     }
   }
@@ -359,7 +336,6 @@ function runProgram(){
     //could have 1 be variable like minBalls
     while(balls.length < 1) {
       balls.push(new ball(WIDTH/2, HEIGHT/2, balls.length));
-      balls[0].angle = 0;
     }
 
     
