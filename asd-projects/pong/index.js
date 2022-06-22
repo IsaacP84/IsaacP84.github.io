@@ -18,6 +18,7 @@ function runProgram(){
   const WIDTH = $("#board").width();
   const HEIGHT = $("#board").height();
 
+  var highestId = 0;
   var KEY = {
     ENTER: 13,
     LEFT: 37,
@@ -80,6 +81,10 @@ function runProgram(){
       $(`<div id="${this.id}" class="ball"></div>`).appendTo("#board");
     }
 
+    if(this.idNum > highestId) {
+      highestId = this.idNum;
+    }
+
     [this.x, this.y] = [x, y];
     [this.width, this.height] = [
       $(`#${this.id}`).width(),
@@ -87,15 +92,25 @@ function runProgram(){
     ];
     //don't worry about this frn. ill deal with it later
     this.speed = speed ? speed : 1.5;
+
+    this.bounces = 0;
+
     let a = Math.random() * (Math.PI / 2);
     while(Math.abs(a - Math.PI/4) < Math.PI / 15) {
       a = Math.random() * (Math.PI / 2);
     }
-    console.log(Math.PI / 15 * Math.sign(a - Math.PI/4) )
     this.angle = 
-                (Math.random() < 0.5 ? -Math.PI / 2 : Math.PI / 2)    //picks a left or right direction
-              + (Math.PI/4)                                         //tilts it by an eighth of a rotation
-              + a;              //adds a random tilt less than a quarter rotation
+                (Math.random() < 0.5 ? -Math.PI / 2 : Math.PI / 2) //picks a left or right direction
+              + (Math.PI/4) // tilts it by an eighth of a rotation
+              + a; // adds a random tilt less than a quarter rotation
+
+    this.split = function() {
+      if(balls.length > 100) return
+      let b = new ball(this.x, this.y, highestId)
+      b.angle = this.angle;
+      balls.push(b);
+    }
+
     this.die = function() {
       let temp = [];
       $(`#${this.id}`).remove()
@@ -231,13 +246,17 @@ function runProgram(){
       checkBoardCollision(object, function(side) {
         if(side == "top") {
           object.angle = -object.angle;
-          // console.log(object.angle * (180 / Math.PI))
-          // object.angle = 0;
+          object.bounces++;
+          if(object.bounces % 3 == 0) {
+            object.split();
+          }
         }
 
         if(side == "bottom") {
           object.angle = -object.angle;
-          if(object.angle < Math.PI) {
+          object.bounces++;
+          if(object.bounces % 3 == 0) {
+            object.split();
           }
         }
 
@@ -257,19 +276,27 @@ function runProgram(){
       });
 
       checkItemItemCollision(object, paddle1, function(side, ball, paddle){
-        console.log("paddle1", side);
-        ball.angle += Math.PI/2;
-        ball.angle *= -1;
-        ball.angle -= Math.PI/2;
+        if(side == "left") {
+          ball.angle += Math.PI/2;
+          ball.angle *= -1;
+          ball.angle -= Math.PI/2;
+          object.bounces++;
+          if(object.bounces % 3 == 0) {
+            object.split();
+          }
+        }
       });
 
       checkItemItemCollision(object, paddle2, function(side, ball, paddle){
-        console.log("paddle2", side);
-        ball.angle += Math.PI/2;
-        ball.angle *= -1;
-        ball.angle -= Math.PI/2;
-        // ball.speed = 0;
-        // ball.x = paddle.x - paddle.width/2 - ball.width/2;
+        if(side == "right") {
+          ball.angle += Math.PI/2;
+          ball.angle *= -1;
+          ball.angle -= Math.PI/2;
+          object.bounces++;
+          if(object.bounces % 3 == 0) {
+            object.split();
+          }
+        }
       });
     }
   }
@@ -336,7 +363,7 @@ function runProgram(){
     }
 
     //could have 1 be variable like minBalls
-    while(balls.length < 10) {
+    while(balls.length < 1) {
       balls.push(new ball(WIDTH/2, HEIGHT/2, balls.length));
     }
 
@@ -366,7 +393,11 @@ function runProgram(){
   }
 
   function endRound() {
-    resetItems();
+    
+    setTimeout(function() {
+      resetItems();
+      drawGameItems();
+    }, 1000);
   }
 
   function endGame() {
