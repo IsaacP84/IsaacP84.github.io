@@ -161,6 +161,10 @@ function runProgram(){
 
     if(paddle1.score >= MAX_SCORE || paddle2.score >= MAX_SCORE) {
       $("#bottomText").text(`${paddle1.score > paddle2.score ? "Player 1": "Player 2"} wins!`);
+      resetItems();
+      for(let ball of balls) {
+        ball.die();
+      }
       drawGameItems();
       endGame();
     }
