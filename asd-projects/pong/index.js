@@ -14,8 +14,13 @@ function runProgram(){
   // higher number, more precise
   const PHYSICS_FRAMES = 5;
 
+  // HTML starting text stuff
   const RANDOM_SPLIT = true;
-  const MAX_SCORE = 50;
+  const MAX_SCORE = 25;
+  const SPLIT_NUM = 3;
+  document.getElementById("bottomText").children[0].innerHTML = `Note: Balls ${RANDOM_SPLIT ? "may randomly split after each bounce" : `will split after ${SPLIT_NUM} bounces`}. `;
+  document.getElementById("bottomText").children[1].innerHTML = `First to ${MAX_SCORE} wins.`;
+  
   // get the board width/height
   const WIDTH = $("#board").width();
   const HEIGHT = $("#board").height();
@@ -277,7 +282,7 @@ function runProgram(){
               object.split();
             }
           } else {
-            if(object.bounces % 3 == 0) {
+            if(object.bounces % SPLIT_NUM == 0) {
               object.split();
             }
           }
@@ -296,7 +301,7 @@ function runProgram(){
               object.split();
             }
           } else {
-            if(object.bounces % 3 == 0) {
+            if(object.bounces % SPLIT_NUM == 0) {
               object.split();
             }
           }
