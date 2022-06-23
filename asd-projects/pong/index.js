@@ -14,6 +14,7 @@ function runProgram(){
   //higher number, more precise
   const PHYSICS_FRAMES = 5;
 
+  const RSPLIT = true;
   //get the board width/height
   const WIDTH = $("#board").width();
   const HEIGHT = $("#board").height();
@@ -34,15 +35,6 @@ function runProgram(){
   // Game Item Objects
   var balls = [];
   var [paddle1, paddle2] = [
-    // {
-    //   id: "ball",
-    //   x: 0,
-    //   y: 0,
-    //   width: 10,
-    //   height: 10,
-    //   speed: 0.75,
-    //   angle: 0
-    // },
     {
       id: "paddle1",
       width: 10,
@@ -80,11 +72,7 @@ function runProgram(){
       //couldn't find a matching ball
       $(`<div id="${this.id}" class="ball"></div>`).appendTo("#board");
     }
-
-    if(this.idNum > highestId) {
-      highestId = this.idNum;
-    }
-
+  
     [this.x, this.y] = [x, y];
     [this.width, this.height] = [
       $(`#${this.id}`).width(),
@@ -93,7 +81,13 @@ function runProgram(){
     //don't worry about this frn. ill deal with it later
     this.speed = speed ? speed : 1.5;
 
+    this.noSplit = true;
+    setTimeout(function(temp) {
+      temp.noSplit = false;
+      console.log("can split", temp.id);
+    }, 10, this);
     this.bounces = 0;
+    console.log("new ball", this.id)
 
     let a = Math.random() * (Math.PI / 2);
     while(Math.abs(a - Math.PI/4) < Math.PI / 15) {
@@ -105,9 +99,18 @@ function runProgram(){
               + a; // adds a random tilt less than a quarter rotation
 
     this.split = function() {
-      if(balls.length > 100) return
-      let b = new ball(this.x, this.y, highestId)
-      b.angle = this.angle;
+      if(balls.length > 100) return;
+      if(this.noSplit) return;
+      let b = new ball(this.x, this.y, ++highestId);
+      console.log(highestId)
+      // b.angle = this.angle + Math.random() * (Math.PI / 2) - Math.PI/4;
+      let a = Math.random() * (Math.PI / 16);
+      b.angle = this.angle + a/2; 
+      this.angle -= a/2;
+      // b.speed = 0;
+      drawGameItems(b);
+      updateGameItem(b);
+      b.bounces = 0;
       balls.push(b);
     }
 
@@ -246,18 +249,10 @@ function runProgram(){
       checkBoardCollision(object, function(side) {
         if(side == "top") {
           object.angle = -object.angle;
-          object.bounces++;
-          if(object.bounces % 3 == 0) {
-            object.split();
-          }
         }
 
         if(side == "bottom") {
           object.angle = -object.angle;
-          object.bounces++;
-          if(object.bounces % 3 == 0) {
-            object.split();
-          }
         }
 
         if(side == "left" || side == "right") {
@@ -280,9 +275,16 @@ function runProgram(){
           ball.angle += Math.PI/2;
           ball.angle *= -1;
           ball.angle -= Math.PI/2;
+          ball.x = paddle.x + paddle.width/2 + ball.width/2;
           object.bounces++;
-          if(object.bounces % 3 == 0) {
-            object.split();
+          if(RSPLIT) {
+            if(Math.random() < 0.3) {
+              object.split();
+            }
+          } else {
+            if(object.bounces % 3 == 0) {
+              object.split();
+            }
           }
         }
       });
@@ -292,9 +294,16 @@ function runProgram(){
           ball.angle += Math.PI/2;
           ball.angle *= -1;
           ball.angle -= Math.PI/2;
+          ball.x = paddle.x - paddle.width/2 - ball.width/2;
           object.bounces++;
-          if(object.bounces % 3 == 0) {
-            object.split();
+          if(RSPLIT) {
+            if(Math.random() < 0.3) {
+              object.split();
+            }
+          } else {
+            if(object.bounces % 3 == 0) {
+              object.split();
+            }
           }
         }
       });
@@ -335,9 +344,15 @@ function runProgram(){
     }
   }
 
-  function drawGameItems() {
+  function drawGameItems(item) {
     //the x/y is the center of the object
     //will draw with that in mind
+    if(item) {
+      $(`#${item.id}`).css("left", `${item.x - item.width/2}px`)
+                      .css("top", `${item.y - item.height/2}px`);
+      return;
+    }
+
     for(let ball of balls) {
       $(`#${ball.id}`).css("left", `${ball.x - ball.width/2}px`)
                       .css("top", `${ball.y - ball.height/2}px`);
