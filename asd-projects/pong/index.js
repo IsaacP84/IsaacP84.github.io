@@ -10,12 +10,13 @@ function runProgram(){
   // Constant Variables
   const FRAME_RATE = 60;
   const FRAMES_PER_SECOND_INTERVAL = 1000 / FRAME_RATE;
-  //changes the number of physics calculations per frame
-  //higher number, more precise
+  // changes the number of physics calculations per frame
+  // higher number, more precise
   const PHYSICS_FRAMES = 5;
 
-  const RSPLIT = true;
-  //get the board width/height
+  const RANDOM_SPLIT = true;
+  const MAX_SCORE = 50;
+  // get the board width/height
   const WIDTH = $("#board").width();
   const HEIGHT = $("#board").height();
 
@@ -57,9 +58,9 @@ function runProgram(){
     }
   ];
 
-  //object definitions
+  // object definitions
   function ball(x, y, idNum, speed = undefined) {
-    //multi purpose parameters
+    // multi purpose parameters
     if(typeof idNum == "string") {
       this.id = idNum;
       this.idNum = parseFloat(idNum.replace(/ball/i, ''));
@@ -69,7 +70,7 @@ function runProgram(){
     }
     
     if($(`#${this.id}`).length === 0) {
-      //couldn't find a matching ball
+      // couldn't find a matching ball
       $(`<div id="${this.id}" class="ball"></div>`).appendTo("#board");
     }
   
@@ -78,23 +79,20 @@ function runProgram(){
       $(`#${this.id}`).width(),
       $(`#${this.id}`).height()
     ];
-    //don't worry about this frn. ill deal with it later
     this.speed = speed ? speed : 1.5;
 
     this.noSplit = true;
     setTimeout(function(temp) {
       temp.noSplit = false;
-      console.log("can split", temp.id);
     }, 10, this);
     this.bounces = 0;
-    console.log("new ball", this.id)
 
     let a = Math.random() * (Math.PI / 2);
     while(Math.abs(a - Math.PI/4) < Math.PI / 15) {
       a = Math.random() * (Math.PI / 2);
     }
     this.angle = 
-                (Math.random() < 0.5 ? -Math.PI / 2 : Math.PI / 2) //picks a left or right direction
+                (Math.random() < 0.5 ? -Math.PI / 2 : Math.PI / 2) // picks a left or right direction
               + (Math.PI/4) // tilts it by an eighth of a rotation
               + a; // adds a random tilt less than a quarter rotation
 
@@ -102,12 +100,9 @@ function runProgram(){
       if(balls.length > 100) return;
       if(this.noSplit) return;
       let b = new ball(this.x, this.y, ++highestId);
-      console.log(highestId)
-      // b.angle = this.angle + Math.random() * (Math.PI / 2) - Math.PI/4;
       let a = Math.random() * (Math.PI / 16);
       b.angle = this.angle + a/2; 
       this.angle -= a/2;
-      // b.speed = 0;
       drawGameItems(b);
       updateGameItem(b);
       b.bounces = 0;
@@ -126,20 +121,18 @@ function runProgram(){
     }
   }
   
-
-
   // one-time setup
   let interval = setInterval(newFrame, FRAMES_PER_SECOND_INTERVAL);   // execute newFrame every 0.0166 seconds (60 Frames per second)
   $(document).on('keydown', handleKeyDown);
   $(document).on('keyup', handleKeyUp);
   
-  //have this definition make the objects on screen
+  // have this definition make the objects on screen
   $(`#${paddle1.id}`).css("width", `${paddle1.width}px`)
                      .css("height", `${paddle1.height}px`);
   
   $(`#${paddle2.id}`).css("width", `${paddle2.width}px`)
                      .css("height", `${paddle2.height}px`);
-  //put objects in place
+  // put objects in place
   resetItems();
 
   ////////////////////////////////////////////////////////////////////////////////
@@ -152,7 +145,7 @@ function runProgram(){
   */
   function newFrame() {
     drawGameItems();
-    //for better physics
+    // for better physics
     for(let i = 0; i < PHYSICS_FRAMES; i++) {
       for(let ball of balls) {
         updateGameItem(ball);
@@ -161,6 +154,10 @@ function runProgram(){
       updateGameItem(paddle2);
     }
 
+    if(paddle1.score >= MAX_SCORE || paddle2.score >= MAX_SCORE) {
+      $("#bottomText").text(`${paddle1.score > paddle2.score ? "Player 1": "Player 2"} wins!`);
+      endGame();
+    }
   }
   
   /* 
@@ -169,17 +166,17 @@ function runProgram(){
 
   function handleKeyDown(event) {
     if(event.which == KEY.ENTER) {
-      //doesnt do anything
+      // doesnt do anything
     }
     
-    //paddle2
+    // paddle2
     if(event.keyCode == KEY.UP) {
       paddle2.movement.u = true;
     } else if(event.keyCode == KEY.DOWN) {
       paddle2.movement.d = true;
     }
 
-    //paddle1
+    // paddle1
     if(event.keyCode == KEY.W) {
       paddle1.movement.u = true;
     } else if(event.keyCode == KEY.S) {
@@ -188,14 +185,14 @@ function runProgram(){
   }
 
   function handleKeyUp(event) {
-    //paddle2
+    // paddle2
     if(event.keyCode == KEY.UP) {
       paddle2.movement.u = false;
     } else if(event.keyCode == KEY.DOWN) {
       paddle2.movement.d = false;
     }
 
-    //paddle1
+    // paddle1
     if(event.keyCode == KEY.W) {
       paddle1.movement.u = false;
     } else if(event.keyCode == KEY.S) {
@@ -208,12 +205,12 @@ function runProgram(){
   ////////////////////////////////////////////////////////////////////////////////
 
   function updateGameItem(object) {
-    //changes the movement speed so that it scales with the board
+    // changes the movement speed so that it scales with the board
     let boardRatio = HEIGHT/200;
     if(object.movement) {
-      //wont need a vel bc no friction and simple physics
+      // wont need a vel bc no friction and simple physics
       if(object.movement.l && object.movement.r) {
-        //do nothing
+        // do nothing
       } else if(object.movement.l) {
         object.x += -object.speed * boardRatio * (1/PHYSICS_FRAMES);
       } else if(object.movement.r) {
@@ -221,7 +218,7 @@ function runProgram(){
       }
 
       if(object.movement.u && object.movement.d) {
-        //do nothing
+        // do nothing
       } else if(object.movement.u) {
         object.y += -object.speed * boardRatio * (1/PHYSICS_FRAMES);
       } else if(object.movement.d) {
@@ -236,12 +233,10 @@ function runProgram(){
         if(side == "bottom") {
           object.y = HEIGHT - object.height/2;
         }
-        
       });
     } else if(true) {
-      //the stuff for the ball
-
-      //trig is fun
+      // the stuff for the ball
+      // trig is fun
       object.x += Math.cos(object.angle) * object.speed * boardRatio * (1/PHYSICS_FRAMES);
       object.y += Math.sin(object.angle) * object.speed * boardRatio * (1/PHYSICS_FRAMES);
 
@@ -277,7 +272,7 @@ function runProgram(){
           ball.angle -= Math.PI/2;
           ball.x = paddle.x + paddle.width/2 + ball.width/2;
           object.bounces++;
-          if(RSPLIT) {
+          if(RANDOM_SPLIT) {
             if(Math.random() < 0.3) {
               object.split();
             }
@@ -296,7 +291,7 @@ function runProgram(){
           ball.angle -= Math.PI/2;
           ball.x = paddle.x - paddle.width/2 - ball.width/2;
           object.bounces++;
-          if(RSPLIT) {
+          if(RANDOM_SPLIT) {
             if(Math.random() < 0.3) {
               object.split();
             }
@@ -345,9 +340,10 @@ function runProgram(){
   }
 
   function drawGameItems(item) {
-    //the x/y is the center of the object
-    //will draw with that in mind
+    // the x/y is the center of the object
+    // will draw with that in mind
     if(item) {
+      // for a single item
       $(`#${item.id}`).css("left", `${item.x - item.width/2}px`)
                       .css("top", `${item.y - item.height/2}px`);
       return;
@@ -367,9 +363,9 @@ function runProgram(){
   }
   
   function resetItems() {
-    //ball
+    // ball
     for(let i in balls) {
-      //might need to fix wackiness with i
+      // might need to fix wackiness with i
       if(balls[i].id) {
         balls[i] = new ball(WIDTH/2, HEIGHT/2, balls[i].id);
       } else {
@@ -377,17 +373,15 @@ function runProgram(){
       }
     }
 
-    //could have 1 be variable like minBalls
+    // could have 1 be variable like minBalls
     while(balls.length < 1) {
       balls.push(new ball(WIDTH/2, HEIGHT/2, balls.length));
     }
 
-    
-    
-    //paddle1
+    // paddle1
     paddle1.y = HEIGHT/2;
     paddle1.x = 60;
-    paddle1.movement = { //readd it
+    paddle1.movement = { // readd it
       moving: false,
       l: false,
       u: false,
@@ -395,10 +389,10 @@ function runProgram(){
       d: false
     };
 
-    //paddle2
+    // paddle2
     paddle2.y = HEIGHT/2;
     paddle2.x = WIDTH - 60;
-    paddle2.movement = { //readd it
+    paddle2.movement = { // readd it
       moving: false,
       l: false,
       u: false,
@@ -408,7 +402,6 @@ function runProgram(){
   }
 
   function endRound() {
-    
     setTimeout(function() {
       resetItems();
       drawGameItems();
